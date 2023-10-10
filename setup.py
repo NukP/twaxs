@@ -5,7 +5,14 @@ setup(
     version="1.0.0",
     packages=find_packages(),
     install_requires=[
-        # List your dependencies here, e.g.
-        # 'numpy>=1.20.0'
+    'h5py',
+    'matplotlib',
+    'ipywidgets',
+    'IPython',
+    'plotly',
+    'numpy',
+    'pandas',
+    'scipy',
+    'python-dateutil'
     ],
 )
