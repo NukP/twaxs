@@ -1,13 +1,58 @@
-import h5py
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from ipywidgets import interactive, IntSlider, SelectionSlider
-from IPython.display import clear_output
-import plotly.graph_objects as go
-import numpy as np
-import pandas as pd
-import os
-from scipy.signal import savgol_filter
-from dateutil.parser import parse
-import math
-import typing
+from typing import List, Dict, Any
+from . import auxiliary as aux
+"""  
+This module contain functions that used to visualized the analyzed data.
+"""
+
+def heatmap(
+    min_range: float, 
+    max_range: float, 
+    height_group_frame: List[int], 
+    integrated_data: str,  
+    fln_num: int  # I'm assuming this is an identifier for the file, replace with the appropriate type if needed
+) -> None:
+    """
+    Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
+    extract the entire intensity in all of the space of q and scan number in the particular experiment.
+
+    :param min_range: Minimum range of q values.
+    :param max_range: Maximum range of q values.
+    :param height_group_frame: List of scan numbers for the height group.
+    :param integrated_data: File path or identifier for integrated data.
+    :param fln_num: File identifier number.
+    """
+    max_positions = 0
+    for x_val in height_group_frame:
+        Y = aux.get_data(fln=integrated_data, dataset_path=f'{x_val}.1/p3_integrate/integrated/intensity')
+        max_positions = max(max_positions, len(Y))
+
+    x = np.linspace(0, max_positions-1, max_positions)
+    y = np.array(height_group_frame)  # ensure this is numpy array for operations later on
+    x, y = np.meshgrid(x, y)
+
+    z = np.empty_like(x)
+
+    for i, y_val in enumerate(height_group_frame):
+        X = aux.get_data(fln=integrated_data, dataset_path=f'{y_val}.1/p3_integrate/integrated/q')
+        Y = aux.get_data(fln=integrated_data, dataset_path=f'{y_val}.1/p3_integrate/integrated/intensity')
+        
+        for j, x_val in enumerate(x[i]):
+            if 0 <= x_val < len(Y):
+                z[i, j] = aux.find_peak_height(X=X, Y=Y[int(x_val)], x_min=min_range, x_max=max_range)
+            else:
+                z[i, j] = np.nan  
+
+    plt.imshow(z.T, extent=[y.min(), y.max(), 0, max_positions], origin='lower', aspect='auto', cmap='RdYlBu', interpolation='nearest')
+    plt.colorbar(label='Maximum peak height')
+    plt.xlabel('Scan number')
+    plt.ylabel('Position')
+    plt.title(f'Exp: {fln_num}, height group: {height_group_frame[0]}, q range = [{min_range},{max_range}]')
+    ax = plt.gca()
+    ax.minorticks_on()
+    y_ticks = np.linspace(0, max_positions-1, 11)  
+    ax.set_yticks(y_ticks)
+    ax.yaxis.set_major_locator(ticker.FixedLocator(y_ticks))
+    plt.show()

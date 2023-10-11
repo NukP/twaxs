@@ -52,6 +52,10 @@ class Dataset:
     @property
     def fln_raw(self) -> str:
         return self._fln_raw
+    
+    @property
+    def fln_num(self) -> str:
+        return self.fln
 
     @property
     def fln_integrated(self) -> str:
@@ -85,9 +89,9 @@ class Dataset:
         return self._height_group_frame
     
 def group_heights(h_array: Dict[int,int]) -> Dict[int,int]: 
-    '''
+    """
     This function sort the peak the number of peak position at to 4 groups (3 experimental height and 1 controlled height)
-    '''
+    """
     rounded_h_array = {k: round(v, 3) for k, v in h_array.items()}
     groups = {}
     for scan_num, height in rounded_h_array.items():
