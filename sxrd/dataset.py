@@ -38,24 +38,32 @@ class Dataset:
 
     def __init__(self, fln: int, height_group: int):
         self.fln: str = str(fln)
-        self.height_group: int = height_group
-        self._fln_raw: str
-        self._fln_integrated: str
-        self._fln_start_macro: int
-        self._height_group_frame: Dict[int, Any] = {}  # Initialize the variable, will be populated later
+        self._height_group: int = height_group
+        self._fln_raw: str = None
+        self._fln_integrated: str = None
+        self._fln_start_macro: int = None
+        self._height_group_frame: Dict[int, Any] = {}
         self._fln_raw, self._fln_integrated, self._fln_start_macro = self.get_fln_detail()
 
     def get_fln_detail(self) -> Tuple[str, str, int]:
-        fln_base = self.dict_fln[self.fln] + '_0001'
+        fln_base = self.dict_fln.get(self.fln)
+        if fln_base is None:
+            return None, None, None
+
+        fln_base += '_0001'
         fln_raw = os.path.join('Data', fln_base + '_raw.h5')
         fln_integrated = os.path.join('Data', fln_base + '_integrated.h5')
-        fln_start_macro = self.dict_macro_start[self.fln]
+        fln_start_macro = self.dict_macro_start.get(self.fln, None)
         return fln_raw, fln_integrated, fln_start_macro
 
     @property
     def fln_raw(self) -> str:
         return self._fln_raw
-    
+
+    @property
+    def height_group(self) -> int:
+        return self._height_group
+
     @property
     def fln_num(self) -> str:
         return self.fln
