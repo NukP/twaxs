@@ -133,13 +133,20 @@ class LoadData:
         # Initialize your figure
         fig = go.FigureWidget()
         fig.update_layout(
+            title={
+                'text': f'Exp: {self.fln_num}, Height group: {self.height_group}',
+                'y':0.9,  
+                'x':0.5, 
+                'xanchor': 'center',  
+                'yanchor': 'top'  
+            },
             xaxis_title='q',
             yaxis_title='Count',
-            width=1500,
+            width=100,
             height=600,
             legend=dict(
-                x=1,  # Legend x position
-                y=1,  # Legend y position
+                x=1,  
+                y=1,  
                 traceorder="normal",
                 font=dict(
                     family="sans-serif",
