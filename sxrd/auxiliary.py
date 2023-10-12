@@ -1,5 +1,9 @@
 import h5py
 import numpy as np
+import pandas as pd
+import os
+from dateutil.parser import parse
+from scipy.signal import savgol_filter
 from typing import List, Union, Optional, Any
 """ 
 This module contains functions that helps analyze the raw data which can be used by the plotting functions in the plot module. 
@@ -50,3 +54,80 @@ def find_peak_height(X: Union[List[float], np.ndarray],
     peak_height = np.max(Y[valid_indices])
     
     return peak_height
+
+def get_peak_height_time(dataset,
+                        x_min,
+                        x_max,
+                        position,
+                        height_list,
+                        smoothing_window=None,
+                        n_pol=2):
+    df_hight_time = pd.DataFrame(columns=['time', 'peak height'])
+    fln_num = dataset.fln
+    raw_data = dataset._fln_raw,
+    integrated_data = dataset._fln_integrated
+    
+    for n in height_list:
+        time = get_scan_time(raw_data, scan_num=n)
+        
+        intensity_data = get_data(fln=integrated_data, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
+        
+        # If smoothing is desired, apply the Savitzky-Golay filter
+        if smoothing_window:
+            # Ensure the window size is odd
+            if smoothing_window % 2 == 0:
+                smoothing_window += 1
+            intensity_data = savgol_filter(intensity_data, smoothing_window, n_pol) 
+        
+        peak_height = find_peak_height(X=get_data(fln=integrated_data, dataset_path=f'{n}.1/p3_integrate/integrated/q'),
+                                       Y=intensity_data,
+                                       x_min=x_min,
+                                       x_max=x_max)
+        df_hight_time.loc[len(df_hight_time)] = [time, peak_height]
+        
+    return df_hight_time
+
+def get_scan_time(fln, scan_num):
+    '''   
+    Get the time stamp of the scan in utx.
+    '''
+    exp_timestamp = get_data(fln=fln, dataset_path=f'{scan_num}.1/start_time').decode('utf-8')
+    exp_timestamp_epoc = float(parse(exp_timestamp).timestamp())
+    return (exp_timestamp_epoc)
+
+def get_fe(fln_num):
+    '''
+    This function take the experiment number (fln_num) and return an array of a dataframe containing utx time stamp and the Faradaic efficiency of different gas product. 
+    '''
+    # Locate the Excel file based on fln_num
+    dir_excel_gc = os.path.join('Analyzed_output', 'GC_Excel')
+    for fln in os.listdir(dir_excel_gc):
+        if int(fln.split('-')[1]) == fln_num:
+            fln_excel = os.path.join(dir_excel_gc, fln)
+            break
+    input_df = pd.read_excel(fln_excel)
+    
+    # Helper function get_col
+    def get_col(input_df, start_row=2):
+        trans_col = []
+        for idx in range(start_row, len(input_df)):
+            trans_col.append(input_df[idx])
+        return trans_col
+
+    for idx_col, col_name in enumerate(input_df.columns):
+        if col_name == 'fe':
+            idx_fe = idx_col
+    for idx_col_findFeEnding in range(idx_fe+1, len(input_df.columns)):
+        col_name = input_df.columns[idx_col_findFeEnding]
+        if col_name.split(':')[0] != 'Unnamed':
+            fe_endRange = idx_col_findFeEnding
+            break
+    df_feGC = pd.DataFrame()   
+    for idx_col_findChemicalName in range(idx_fe, fe_endRange):
+         col_name = input_df.iloc[0, idx_col_findChemicalName]
+         col_data = get_col(input_df.iloc[:, idx_col_findChemicalName])
+         df_feGC.insert(len(df_feGC.columns), col_name, col_data)
+    df_feGC.insert(len(df_feGC.columns), 'Overall', df_feGC.sum(axis=1))
+    df_feGC.insert(0, 'time', get_col(input_df['Unnamed: 0']))
+    
+    return df_feGC
