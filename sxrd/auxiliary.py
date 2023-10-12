@@ -1,6 +1,6 @@
 import h5py
 import numpy as np
-from typing import Any
+from typing import List, Union, Optional, Any
 """ 
 This module contains functions that helps analyze the raw data which can be used by the plotting functions in the plot module. 
 """
@@ -20,7 +20,10 @@ def get_data(fln: str, dataset_path: str) -> Any:
         data = f[dataset_path][()]
     return data
 
-def find_peak_height(X, Y, x_min, x_max):
+def find_peak_height(X: Union[List[float], np.ndarray], 
+                     Y: Union[List[float], np.ndarray], 
+                     x_min: float, 
+                     x_max: float) -> Optional[float]:
     """
     Find the peak height in a given XRD diffractogram within a specified x range.
 

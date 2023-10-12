@@ -4,7 +4,7 @@ from typing import Dict, Tuple, Any
 from . import auxiliary as aux
 """   
 This module contains functions that load and handles parsing of the raw data.
-Cerntain information specific to experimental files obtaining from a beamtime during 14-18 September 2023
+Cerntain information specific to experimental files obtaining from a beamtime during 14-18 th  September 2023
 was incoperated here for smooth parsing of the raw data. For other set of experiment, please adjust these 
 conditions acordingly. 
 """  
