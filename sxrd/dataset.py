@@ -120,13 +120,13 @@ class LoadData:
             if label:  # Add a legend entry only if a label is provided
                 fig.add_trace(
                     go.Scatter(
-                        x=[None],  # This trace has no data points
+                        x=[None],  
                         y=[None],
                         mode="markers",
                         marker=dict(color=color),
                         name=label,
                         showlegend=True,
-                        legendgroup=label  # This ensures one legend entry per label
+                        legendgroup=label  
                     )
                 )
 
@@ -142,7 +142,7 @@ class LoadData:
             },
             xaxis_title='q',
             yaxis_title='Count',
-            width=100,
+            width=1600,
             height=600,
             legend=dict(
                 x=1,  
@@ -171,7 +171,6 @@ class LoadData:
                     ybar_plotly(fig, pos, label if not added_legend else '', thick=0.01, color=color)
                     added_legend = True
 
-        # Display the initial empty figure
         display(fig)
 
         # Function to update the plot with new data
