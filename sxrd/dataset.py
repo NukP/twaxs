@@ -26,6 +26,19 @@ class LoadData:
         '19': '19_S14'
     }
 
+    dict_condition: Dict[str, str] = {
+        '6': 'PVDF-HFP Cu 0.2 μm 2 M KCl (trial 1)',
+        '11': 'PVDF-HFP Cu 0.2 μm 2 M KCl (trial 2)',
+        '12': 'PVDF-HFP Cu 0.2 μm 2 M KCl + 0.1 M H\u2082SO\u2084',
+        '13': 'PVDF-HFP Cu 0.2 μm 2 M CsCl',
+        '14': 'PVDF-HFP Cu 0.2 μm 2 M KCl, interupted / protective /oxidation',
+        '15': 'PVDF-HFP Ag 0.2 μm 2 M KCl',
+        '16': 'PVDF-HFP Ag 0.2 μm 2 M KCl + 0.1 M H\u2082SO\u2084',
+        '17': 'PVDF-HFP Ag 0.2 μm 2 M KCl, interupted / protective',
+        '18': 'PVDF-HFP Ag 0.2 μm 2 M CsCl',
+        '19': 'PVDF-HFP Ag 0.2 μm 2 M KCl, interupted / oxidative'
+    }
+
     dict_macro_start: Dict[str, int] = {
         '6': 14,
         '11': 9,
@@ -134,13 +147,13 @@ class LoadData:
         fig = go.FigureWidget()
         fig.update_layout(
             title={
-                'text': f'Exp: {self.fln_num}, Height group: {self.height_group} <br> Condition: ',
+                'text': f'Exp: {self.fln_num}, Height group: {self.height_group} <br> Condition: {self.dict_condition.get(self.fln)}',
                 'y':0.9,  
                 'x':0.5, 
                 'xanchor': 'center',  
                 'yanchor': 'top',
             },
-            title_font=dict(size=24),  
+            title_font=dict(size=20),  
             xaxis_title='q',
             yaxis_title='Count',
             width=1600,
@@ -155,7 +168,7 @@ class LoadData:
                     color="black"
                 ),
                 bgcolor="White",
-                bordercolor="rgba(0,0,0,0)",
+                bordercolor="Black",
                 borderwidth=2
                 )
         )
@@ -175,7 +188,7 @@ class LoadData:
         display(fig)
 
         # Function to update the plot with new data
-        def plot_data(n, position, bg_substract):
+        def plot_data(n, position, bg_substract, log_scale):
             x = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/q')
             y_0 = aux.get_data(fln=self._fln_integrated, dataset_path=f'{self.height_group_frame[0]}.1/p3_integrate/integrated/intensity')[position]
             y_n = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
@@ -185,6 +198,7 @@ class LoadData:
             # Update the data in the existing figure
             fig.data[0].x = x
             fig.data[0].y = y
+            fig.update_yaxes(type='log' if log_scale else 'linear')
             clear_output(wait=True)
 
         max_positions = 0
@@ -197,7 +211,8 @@ class LoadData:
             plot_data,
             n=SelectionSlider(options=self.height_group_frame, description='Scan number'),
             position=IntSlider(min=0, max=max_positions-1, step=1, description='Position'),
-            bg_substract=Checkbox(value=False, description='Background Subtraction')
+            bg_substract=Checkbox(value=False, description='Background Subtraction'),
+            log_scale=Checkbox(value=False, description='Log Scale Y')
         )
         display(interactive_plot)
         
