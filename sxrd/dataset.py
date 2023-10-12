@@ -134,19 +134,20 @@ class LoadData:
         fig = go.FigureWidget()
         fig.update_layout(
             title={
-                'text': f'Exp: {self.fln_num}, Height group: {self.height_group}',
+                'text': f'Exp: {self.fln_num}, Height group: {self.height_group} <br> Condition: ',
                 'y':0.9,  
                 'x':0.5, 
                 'xanchor': 'center',  
-                'yanchor': 'top'  
+                'yanchor': 'top',
             },
+            title_font=dict(size=24),  
             xaxis_title='q',
             yaxis_title='Count',
             width=1600,
             height=600,
             legend=dict(
-                x=1,  
-                y=1,  
+                x=1,  # Legend x position
+                y=1,  # Legend y position
                 traceorder="normal",
                 font=dict(
                     family="sans-serif",
@@ -154,9 +155,9 @@ class LoadData:
                     color="black"
                 ),
                 bgcolor="White",
-                bordercolor="Black",
+                bordercolor="rgba(0,0,0,0)",
                 borderwidth=2
-            )
+                )
         )
 
         # Add a primary trace for the data
