@@ -1,6 +1,9 @@
 import os
 import h5py
-from typing import Dict, Tuple, Any
+from typing import Dict, Any, List, Tuple, Optional
+import plotly.graph_objects as go
+from IPython.display import display, clear_output
+from ipywidgets import interactive, SelectionSlider, IntSlider, Checkbox
 from . import auxiliary as aux
 """   
 This module contains functions that load and handles parsing of the raw data.
@@ -8,7 +11,7 @@ Cerntain information specific to experimental files obtaining from a beamtime du
 was incoperated here for smooth parsing of the raw data. For other set of experiment, please adjust these 
 conditions acordingly. 
 """  
-class Dataset:
+class LoadData:
    
     dict_fln: Dict[str, str] = {
         '6': '06_s01',
@@ -99,6 +102,99 @@ class Dataset:
             self._height_group_frame = grouped_height_array[self.height_group]
         return self._height_group_frame
     
+    def show_spectrum(self, xref_list: Optional[List] = None):
+        # Function to draw vertical bars and legend labels
+        def ybar_plotly(fig, x, label, thick=0.02, alpha=0.25, color='green'):
+            fig.add_shape(
+                type="rect",
+                x0=x-thick,
+                x1=x+thick,
+                y0=0,
+                y1=1,
+                fillcolor=color,
+                opacity=alpha,
+                line=dict(width=0),
+                xref="x",
+                yref="paper"
+            )
+            if label:  # Add a legend entry only if a label is provided
+                fig.add_trace(
+                    go.Scatter(
+                        x=[None],  # This trace has no data points
+                        y=[None],
+                        mode="markers",
+                        marker=dict(color=color),
+                        name=label,
+                        showlegend=True,
+                        legendgroup=label  # This ensures one legend entry per label
+                    )
+                )
+
+        # Initialize your figure
+        fig = go.FigureWidget()
+        fig.update_layout(
+            xaxis_title='q',
+            yaxis_title='Count',
+            width=1500,
+            height=600,
+            legend=dict(
+                x=1,  # Legend x position
+                y=1,  # Legend y position
+                traceorder="normal",
+                font=dict(
+                    family="sans-serif",
+                    size=15,
+                    color="black"
+                ),
+                bgcolor="White",
+                bordercolor="Black",
+                borderwidth=2
+            )
+        )
+
+        # Add a primary trace for the data
+        fig.add_trace(go.Scatter(x=[], y=[], mode='lines', line=dict(color='red', width=2), name="Spectrum", opacity=0.7, showlegend=False))
+
+        # If xref_list is provided, add bars and legends
+        if xref_list is not None:
+            for item in xref_list:
+                xrefs, color, label = item
+                added_legend = False
+                for pos in xrefs:
+                    ybar_plotly(fig, pos, label if not added_legend else '', thick=0.01, color=color)
+                    added_legend = True
+
+        # Display the initial empty figure
+        display(fig)
+
+        # Function to update the plot with new data
+        def plot_data(n, position, bg_substract):
+            x = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/q')
+            y_0 = aux.get_data(fln=self._fln_integrated, dataset_path=f'{self.height_group_frame[0]}.1/p3_integrate/integrated/intensity')[position]
+            y_n = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
+
+            y = y_n - y_0 if bg_substract else y_n
+
+            # Update the data in the existing figure
+            fig.data[0].x = x
+            fig.data[0].y = y
+            clear_output(wait=True)
+
+        max_positions = 0
+        for n in self.height_group_frame:
+            Y = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')
+            max_positions = max(max_positions, len(Y))
+
+        # Create interactive sliders and checkbox
+        interactive_plot = interactive(
+            plot_data,
+            n=SelectionSlider(options=self.height_group_frame, description='Scan number'),
+            position=IntSlider(min=0, max=max_positions-1, step=1, description='Position'),
+            bg_substract=Checkbox(value=False, description='Background Subtraction')
+        )
+        display(interactive_plot)
+        
+
 def group_heights(h_array: Dict[int,int]) -> Dict[int,int]: 
     """
     This function sort the peak the number of peak position at to 4 groups (3 experimental height and 1 controlled height)
