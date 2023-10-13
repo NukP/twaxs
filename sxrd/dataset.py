@@ -1,3 +1,9 @@
+"""   
+This module contains functions that load and handles parsing of the raw data.
+Cerntain information specific to experimental files obtaining from a beamtime during 14-18 th  September 2023
+was incoperated here for smooth parsing of the raw data. For other set of experiment, please adjust these 
+conditions acordingly. 
+"""  
 import os
 import h5py
 from typing import Dict, Any, List, Tuple, Optional
@@ -5,13 +11,12 @@ import plotly.graph_objects as go
 from IPython.display import display, clear_output
 from ipywidgets import interactive, SelectionSlider, IntSlider, Checkbox
 from . import auxiliary as aux
-"""   
-This module contains functions that load and handles parsing of the raw data.
-Cerntain information specific to experimental files obtaining from a beamtime during 14-18 th  September 2023
-was incoperated here for smooth parsing of the raw data. For other set of experiment, please adjust these 
-conditions acordingly. 
-"""  
+
 class LoadData:
+    """
+    This class take experiment number and height group to create an object that process properties requires for other functions used for 
+    analysis and visualizing data. This class also include show_spectrum class function, allowing the users to quickly visualize the spectrum. 
+    """
    
     dict_fln: Dict[str, str] = {
         '6': '06_s01',
@@ -188,7 +193,7 @@ class LoadData:
         display(fig)
 
         # Function to update the plot with new data
-        def plot_data(n, position, bg_substract, log_scale):
+        def plot_data(n: int, position: int, bg_substract: bool, log_scale: bool) -> None:
             x = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/q')
             y_0 = aux.get_data(fln=self._fln_integrated, dataset_path=f'{self.height_group_frame[0]}.1/p3_integrate/integrated/intensity')[position]
             y_n = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
