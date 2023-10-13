@@ -142,3 +142,14 @@ def get_fe(fln_num: int) -> pd.DataFrame:
     df_feGC.insert(0, 'time', get_col(input_df['Unnamed: 0']))
     
     return df_feGC
+
+def export_spectrum(dataset: 'LoadData',
+                    scan_num: int,
+                    position: int, 
+                    export_dir: str) -> None:
+    """ 
+    This function print the q and count value of the spectrum of a specific scan number and position
+    """
+    df_export = pd.Dataframe(columns=['q', 'count'])
+    
+    pass
