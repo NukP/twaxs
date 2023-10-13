@@ -62,7 +62,7 @@ def get_peak_height_time(dataset: 'LoadData',
                         x_min: float,
                         x_max: float,
                         position: int,
-                        smoothing_window: Optional[int]=None,
+                        smoothing_window: Union[None, int] = None,
                         n_pol: int =2) -> pd.DataFrame:
     """
     This function returns a maximum peak height in the speciifc area at the given position as a function of time stamp. 

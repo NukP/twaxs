@@ -1,3 +1,7 @@
+"""  
+This module contain functions that used to visualized the analyzed data.
+"""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,9 +10,7 @@ from typing import List, Dict, Any, Union
 from . import auxiliary as aux
 from .dataset import LoadData
 
-"""  
-This module contain functions that used to visualized the analyzed data.
-"""
+
 
 def heatmap(dataset:LoadData, min_range: float, max_range: float) -> None:
     """
@@ -62,14 +64,14 @@ def compare_peak_fe(dataset:LoadData,
                     x_min: float, 
                     x_max: float,
                     position_range: Union[int, List[int]],
-                    smoothing_window=None,
-                    n_pol=3,
-                    axis_y_log=False,
-                    axis_y_min=False,
-                    axis_y_max=False,
-                    axis_x_min=False,
-                    axis_x_max=False, 
-                    export_table=False):
+                    smoothing_window: Union [None, int] = None,
+                    n_pol: int =3,
+                    axis_y_log: bool = False,
+                    axis_y_min: Union[bool, int] = False,
+                    axis_y_max: Union[bool, int] = False,
+                    axis_x_min: Union[bool, int] = False,
+                    axis_x_max: Union[bool, int] = False, 
+                    export_table: Union[bool, str] = False) -> None:
     """  
     Function to plot the X-ray intensity and the Faradaic efficiency for H2 and C2H4 (for Cu) or CO (For Ag).
     This function also includes a built-in smoothing function for the X-ray data and the ability to export the X-ray data and the FE into an excel file.
