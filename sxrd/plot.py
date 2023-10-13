@@ -2,14 +2,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
 from . import auxiliary as aux
+from .dataset import LoadData
 
 """  
 This module contain functions that used to visualized the analyzed data.
 """
 
-def heatmap(dataset, min_range: float, max_range: float) -> None:
+def heatmap(dataset:LoadData, min_range: float, max_range: float) -> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
     extract the entire intensity in all of the space of q and scan number in the particular experiment.
@@ -57,11 +58,10 @@ def heatmap(dataset, min_range: float, max_range: float) -> None:
     ax.yaxis.set_major_locator(ticker.FixedLocator(y_ticks))
     plt.show()
 
-def compare_peak_fe(dataset,
-                    x_min, 
-                    x_max,
-                    position_range,
-                    height_list,
+def compare_peak_fe(dataset:LoadData,
+                    x_min: float, 
+                    x_max: float,
+                    position_range: Union[int, List[int]],
                     smoothing_window=None,
                     n_pol=3,
                     axis_y_log=False,
@@ -74,7 +74,7 @@ def compare_peak_fe(dataset,
     Function to plot the X-ray intensity and the Faradaic efficiency for H2 and C2H4 (for Cu) or CO (For Ag).
     This function also includes a built-in smoothing function for the X-ray data and the ability to export the X-ray data and the FE into an excel file.
     """
-    fln_num = dataset.fln_num
+    fln_num = int(dataset.fln_num)
     height_group = dataset.height_group
     # Convert single position to a list
     if isinstance(position_range, int):
@@ -83,7 +83,7 @@ def compare_peak_fe(dataset,
     # Collect data for all positions
     dfs_xray = []
     for pos in range(position_range[0], position_range[-1]+1):
-        dfs_xray.append(aux.get_peak_height_time(x_min, x_max, pos, fln_num, height_list, smoothing_window, n_pol))
+        dfs_xray.append(aux.get_peak_height_time(dataset, x_min, x_max, pos, smoothing_window, n_pol))
 
     # Average the data
     avg_df_xray = dfs_xray[0].copy()

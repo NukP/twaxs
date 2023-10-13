@@ -5,6 +5,7 @@ import os
 from dateutil.parser import parse
 from scipy.signal import savgol_filter
 from typing import List, Union, Optional, Any
+from .dataset import LoadData
 """ 
 This module contains functions that helps analyze the raw data which can be used by the plotting functions in the plot module. 
 """
@@ -55,21 +56,18 @@ def find_peak_height(X: Union[List[float], np.ndarray],
     
     return peak_height
 
-def get_peak_height_time(dataset,
-                        x_min,
-                        x_max,
+def get_peak_height_time(dataset: LoadData,
+                        x_min: float,
+                        x_max: float,
                         position,
-                        height_list,
                         smoothing_window=None,
                         n_pol=2):
     df_hight_time = pd.DataFrame(columns=['time', 'peak height'])
-    fln_num = dataset.fln
-    raw_data = dataset._fln_raw,
-    integrated_data = dataset._fln_integrated
-    
-    for n in height_list:
+    raw_data = dataset.fln_raw
+    frame = dataset.height_group_frame
+    integrated_data = dataset.fln_integrated
+    for n in frame:
         time = get_scan_time(raw_data, scan_num=n)
-        
         intensity_data = get_data(fln=integrated_data, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
         
         # If smoothing is desired, apply the Savitzky-Golay filter
@@ -88,22 +86,22 @@ def get_peak_height_time(dataset,
     return df_hight_time
 
 def get_scan_time(fln, scan_num):
-    '''   
+    """    
     Get the time stamp of the scan in utx.
-    '''
+    """ 
     exp_timestamp = get_data(fln=fln, dataset_path=f'{scan_num}.1/start_time').decode('utf-8')
     exp_timestamp_epoc = float(parse(exp_timestamp).timestamp())
     return (exp_timestamp_epoc)
 
 def get_fe(fln_num):
-    '''
+    """ 
     This function take the experiment number (fln_num) and return an array of a dataframe containing utx time stamp and the Faradaic efficiency of different gas product. 
-    '''
+    """ 
     # Locate the Excel file based on fln_num
     dir_excel_gc = os.path.join('Analyzed_output', 'GC_Excel')
-    for fln in os.listdir(dir_excel_gc):
-        if int(fln.split('-')[1]) == fln_num:
-            fln_excel = os.path.join(dir_excel_gc, fln)
+    for file in os.listdir(dir_excel_gc):
+        if int(file.split('-')[1]) == fln_num:
+            fln_excel = os.path.join(dir_excel_gc, file)
             break
     input_df = pd.read_excel(fln_excel)
     
