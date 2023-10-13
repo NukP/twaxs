@@ -5,7 +5,7 @@ import os
 from dateutil.parser import parse
 from scipy.signal import savgol_filter
 from typing import List, Union, Optional, Any
-from .dataset import LoadData
+
 """ 
 This module contains functions that helps analyze the raw data which can be used by the plotting functions in the plot module. 
 """
@@ -56,7 +56,7 @@ def find_peak_height(X: Union[List[float], np.ndarray],
     
     return peak_height
 
-def get_peak_height_time(dataset: LoadData,
+def get_peak_height_time(dataset: 'LoadData',
                         x_min: float,
                         x_max: float,
                         position,
