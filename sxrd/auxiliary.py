@@ -1,3 +1,7 @@
+""" 
+This module contains functions that helps analyze the raw data which can be used by the plotting functions in the plot module. 
+"""
+
 import h5py
 import numpy as np
 import pandas as pd
@@ -6,9 +10,7 @@ from dateutil.parser import parse
 from scipy.signal import savgol_filter
 from typing import List, Union, Optional, Any
 
-""" 
-This module contains functions that helps analyze the raw data which can be used by the plotting functions in the plot module. 
-"""
+
 
 def get_data(fln: str, dataset_path: str) -> Any:
     """
@@ -59,9 +61,12 @@ def find_peak_height(X: Union[List[float], np.ndarray],
 def get_peak_height_time(dataset: 'LoadData',
                         x_min: float,
                         x_max: float,
-                        position,
-                        smoothing_window=None,
-                        n_pol=2):
+                        position: int,
+                        smoothing_window: Optional[int]=None,
+                        n_pol: int =2) -> pd.DataFrame:
+    """
+    This function returns a maximum peak height in the speciifc area at the given position as a function of time stamp. 
+    """
     df_hight_time = pd.DataFrame(columns=['time', 'peak height'])
     raw_data = dataset.fln_raw
     frame = dataset.height_group_frame
@@ -85,7 +90,7 @@ def get_peak_height_time(dataset: 'LoadData',
         
     return df_hight_time
 
-def get_scan_time(fln, scan_num):
+def get_scan_time(fln: str, scan_num: int) -> float:
     """    
     Get the time stamp of the scan in utx.
     """ 
@@ -93,7 +98,7 @@ def get_scan_time(fln, scan_num):
     exp_timestamp_epoc = float(parse(exp_timestamp).timestamp())
     return (exp_timestamp_epoc)
 
-def get_fe(fln_num):
+def get_fe(fln_num: int) -> pd.DataFrame:
     """ 
     This function take the experiment number (fln_num) and return an array of a dataframe containing utx time stamp and the Faradaic efficiency of different gas product. 
     """ 
@@ -106,11 +111,19 @@ def get_fe(fln_num):
     input_df = pd.read_excel(fln_excel)
     
     # Helper function get_col
-    def get_col(input_df, start_row=2):
+    def get_col(input_df: pd.DataFrame, start_row: int = 2) -> List:
+        """
+        Extracts a column from input_df starting from start_row.
+        
+        :param input_df: The dataframe to process.
+        :param start_row: The row index to start the extraction from.
+        :return: A list representing the extracted column.
+        """
         trans_col = []
         for idx in range(start_row, len(input_df)):
             trans_col.append(input_df[idx])
         return trans_col
+
 
     for idx_col, col_name in enumerate(input_df.columns):
         if col_name == 'fe':
