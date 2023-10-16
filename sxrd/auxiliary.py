@@ -6,6 +6,7 @@ import h5py
 import numpy as np
 import pandas as pd
 import os
+import math
 from dateutil.parser import parse
 from scipy.signal import savgol_filter
 from typing import List, Union, Optional, Any
@@ -155,3 +156,45 @@ def export_spectrum(data: 'LoadData',
     count = get_data(fln=data.fln_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/intensity')[position]
     df_export = pd.DataFrame({'q': q, 'count': count})
     df_export.to_excel(export_dir, index=False)
+
+def twotheta2q(angle: float, wavelength:float =1.5406) -> float:  
+    """
+    Convert 2theta angle to q
+    The default wavelength is that of Cu K alpha
+    """
+    theta = math.radians(angle / 2)  
+    q = (4 * math.pi * math.sin(theta)) / wavelength
+    return q
+
+def get_ref_xray(excel_xray_fl: str, threshold: int =10) -> List[float]:
+    """
+    Exract the diffraction pattern with intensity higher than the set treshold from a standard diffraction pattern.  
+    """
+    df_xray = pd.read_excel(excel_xray_fl)
+    xray_array = []
+    for idx in range(0, len(df_xray)):
+        if df_xray['I [%]'][idx] >= threshold:
+            xray_array.append(twotheta2q(df_xray['2θ [°]'][idx]))
+    return xray_array
+
+def load_xray_ref_folder(xray_ref_folder: str, threshold: int = 10) -> List[List[float]]:
+    """ 
+    Load X-ray reference files from a specified folder and convert them into a list of X-ray patterns.
+    
+    This function reads all files in the given folder path, converts the X-ray reference data in each file 
+    into a list of X-ray patterns using the get_ref_xray function, and aggregates them into a list.
+
+    Args:
+    xray_ref_folder (str): Path to the folder containing the X-ray reference files.
+    threshold (int, optional): A cutoff intensity percentage; patterns with intensity below this threshold 
+                               will be excluded. Defaults to 10.
+
+    Returns:
+    List[List[float]]: A list containing lists of X-ray patterns from each file.
+    """
+    xray_ref_list = []
+    for file in sorted(os.listdir(xray_ref_folder)):
+        if file.endswith(".xlsx"):  # assuming the files are .xlsx, adjust if different
+            full_file_path = os.path.join(xray_ref_folder, file)
+            xray_ref_list.append(get_ref_xray(full_file_path, threshold=threshold))
+    return xray_ref_list
