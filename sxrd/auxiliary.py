@@ -143,13 +143,15 @@ def get_fe(fln_num: int) -> pd.DataFrame:
     
     return df_feGC
 
-def export_spectrum(dataset: 'LoadData',
+def export_spectrum(data: 'LoadData',
                     scan_num: int,
                     position: int, 
                     export_dir: str) -> None:
     """ 
     This function print the q and count value of the spectrum of a specific scan number and position
     """
-    df_export = pd.Dataframe(columns=['q', 'count'])
-    
-    pass
+    from . import dataset
+    q = get_data(fln=data.fln_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/q')
+    count = get_data(fln=data.fln_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/intensity')[position]
+    df_export = pd.DataFrame({'q': q, 'count': count})
+    df_export.to_excel(export_dir, index=False)
