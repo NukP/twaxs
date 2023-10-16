@@ -173,8 +173,8 @@ class LoadData:
                     color="black"
                 ),
                 bgcolor="White",
-                bordercolor="Black",
-                borderwidth=2
+                bordercolor="White",
+                borderwidth=0
                 )
         )
 
