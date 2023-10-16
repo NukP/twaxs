@@ -159,8 +159,15 @@ def export_spectrum(data: 'LoadData',
 
 def twotheta2q(angle: float, wavelength:float =1.5406) -> float:  
     """
-    Convert 2theta angle to q
-    The default wavelength is that of Cu K alpha
+    This function take the 2theta as in input and convert them to a respective q vector.
+
+    Args:
+        angle (float): 2 Theta angle from an xray diffraction pattern.
+        wavelength (float, optional): wavelength of the xray source of the input spectrum. The default is set to 1.5406 
+        which is the xray wavelength of an Cu k alpha. 
+
+    Returns:
+        float: converted q vector value.
     """
     theta = math.radians(angle / 2)  
     q = (4 * math.pi * math.sin(theta)) / wavelength
@@ -187,7 +194,7 @@ def load_xray_ref_folder(xray_ref_folder: str, threshold: int = 10) -> List[List
     Args:
     xray_ref_folder (str): Path to the folder containing the X-ray reference files.
     threshold (int, optional): A cutoff intensity percentage; patterns with intensity below this threshold 
-                               will be excluded. Defaults to 10.
+    will be excluded. Defaults to 10.
 
     Returns:
     List[List[float]]: A list containing lists of X-ray patterns from each file.
@@ -198,3 +205,4 @@ def load_xray_ref_folder(xray_ref_folder: str, threshold: int = 10) -> List[List
             full_file_path = os.path.join(xray_ref_folder, file)
             xray_ref_list.append(get_ref_xray(full_file_path, threshold=threshold))
     return xray_ref_list
+
