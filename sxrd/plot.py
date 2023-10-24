@@ -12,16 +12,16 @@ from .dataset import LoadData
 
 
 
-def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: str = None) -> None:
+def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: str = None, display_rxn_time: bool = False) -> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
     extract the entire intensity in all of the space of q and scan number in the particular experiment.
 
+    :param datasey: dataset object of the associated experiment.
     :param min_range: Minimum range of q values.
     :param max_range: Maximum range of q values.
-    :param height_group_frame: List of scan numbers for the height group.
-    :param integrated_data: File path or identifier for integrated data.
-    :param fln_num: File identifier number.
+    :param export_data: Whether or not to export data in excel format.
+    :param display_rxn_time: If True, display reaction time. If False, display scan number.
     """
     max_positions = 0
     height_group_frame = dataset.height_group_frame
@@ -33,9 +33,13 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
         max_positions = max(max_positions, len(Y))
 
     x = np.linspace(0, max_positions-1, max_positions)
-    y = np.array(height_group_frame)  # ensure this is numpy array for operations later on
+    if display_rxn_time:
+        array_timestamp = [aux.get_scan_time(fln=dataset.fln_raw,scan_num=f) for f in height_group_frame]
+        array_rxn_time = [(t-array_timestamp[0])/60 for t in array_timestamp]
+        y = np.array(array_rxn_time)
+    else:
+        y = np.array(height_group_frame)  # ensure this is numpy array for operations later on
     x, y = np.meshgrid(x, y)
-
     z = np.empty_like(x)
 
     for i, y_val in enumerate(height_group_frame):
@@ -50,7 +54,11 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
 
     plt.imshow(z.T, extent=[y.min(), y.max(), 0, max_positions], origin='lower', aspect='auto', cmap='RdYlBu', interpolation='nearest')
     plt.colorbar(label='Maximum peak height')
-    plt.xlabel('Scan number')
+    if display_rxn_time:
+        x_label = 'Time (min)'
+    else:
+        x_label = 'Scan number'
+    plt.xlabel(x_label)
     plt.ylabel('Position')
     plt.title(f'Exp: {fln_num}, height group: {height_group}, q range = [{min_range},{max_range}]')
     ax = plt.gca()
@@ -61,7 +69,7 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
     plt.show()
     if export_data:
         data = {
-            'Scan number': y.flatten(),
+            x_label: y.flatten(),
             'Position': x.flatten(),
             'Maximum peak height': z.flatten()
         }
