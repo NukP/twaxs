@@ -12,7 +12,7 @@ from .dataset import LoadData
 
 
 
-def heatmap(dataset:LoadData, min_range: float, max_range: float) -> None:
+def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: str = None) -> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
     extract the entire intensity in all of the space of q and scan number in the particular experiment.
@@ -59,6 +59,14 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float) -> None:
     ax.set_yticks(y_ticks)
     ax.yaxis.set_major_locator(ticker.FixedLocator(y_ticks))
     plt.show()
+    if export_data:
+        data = {
+            'Scan number': y.flatten(),
+            'Position': x.flatten(),
+            'Maximum peak height': z.flatten()
+        }
+        df = pd.DataFrame(data)
+        df.to_excel(export_data, index=False)
 
 def compare_peak_fe(dataset:LoadData,
                     x_min: float, 
