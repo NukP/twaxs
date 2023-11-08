@@ -10,8 +10,6 @@ from typing import List, Dict, Any, Union
 from . import auxiliary as aux
 from .dataset import LoadData
 
-
-
 def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: str = None, display_rxn_time: bool = False) -> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
@@ -172,3 +170,58 @@ def compare_peak_fe(dataset:LoadData,
             df_export['FE_CO / %'] = df_fe['CO']*100
 
         df_export.to_excel(export_table, index=False)
+
+def peak_span (dataset:LoadData,
+               x_min: float,
+               x_max: float,
+               n_plot: int,
+               export_table: Union[bool, str] = False) -> None:
+    """
+    Function to plot peaks in the designated range at specific scan interval to check the peak broadening.
+
+    :param datasey: dataset object of the associated experiment.
+    :param x_min: minimum q-range of the plotting window.
+    :param x_max: maximum q-range of the plotting window.
+    :param n_plot: number of plot to be overlayed.
+    :export_table: if given, a path to export an Excel file containing peak information. 
+    """
+    def select_frames(frame_list: List[int], n: int) -> List[int]:
+        """
+        Selects 'n' evenly spaced frames from a given list of frame numbers.
+        
+        The function calculates the step size and the starting index to ensure that
+        the frames are as evenly distributed as possible across the list. If 'n' is
+        greater than the number of frames, it returns the entire list.
+        
+        Parameters:
+        frame_list (List[int]): The list of frame numbers to select from.
+        n (int): The number of frames to select.
+        
+        Returns:
+        List[int]: A list containing the selected frame numbers.
+        
+        Raises:
+        ValueError: If 'n' is a non-positive integer.
+        """
+        if n <= 0:
+            raise ValueError("The number of frames to select must be a positive integer.")
+        
+        total_frames = len(frame_list)
+        if n >= total_frames:
+            return frame_list  # If n is greater than the list size, return the whole list.
+        
+        step = max(total_frames // n, 1)  # Ensure step is at least 1
+        selected_frames = []
+
+        # Calculate the starting index to make the distribution as even as possible
+        start_index = (total_frames - (step * (n - 1))) // 2
+
+        for i in range(n):
+            # Calculate the index of the frame to be selected
+            index = start_index + i * step
+            # Append the selected frame to the list
+            selected_frames.append(frame_list[index])
+
+        return selected_frames
+
+    pass
