@@ -223,5 +223,6 @@ def peak_span (dataset:LoadData,
             selected_frames.append(frame_list[index])
 
         return selected_frames
-
-    pass
+    
+    selected_frames = select_frames(dataset.height_group_frame, n_plot)
+    return selected_frames
