@@ -147,7 +147,7 @@ def get_fe(fln_num: int) -> pd.DataFrame:
 def export_spectrum(data: 'LoadData',
                     scan_num: int,
                     position: int, 
-                    export_dir: str) -> None:
+                    export_dir: Union[bool, str] = False) -> pd.DataFrame:
     """ 
     This function print the q and count value of the spectrum of a specific scan number and position
     """
@@ -155,7 +155,9 @@ def export_spectrum(data: 'LoadData',
     q = get_data(fln=data.fln_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/q')
     count = get_data(fln=data.fln_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/intensity')[position]
     df_export = pd.DataFrame({'q': q, 'count': count})
-    df_export.to_excel(export_dir, index=False)
+    if export_dir is not False:
+        df_export.to_excel(export_dir, index=False)
+    return df_export
 
 def twotheta2q(angle: float, wavelength:float =1.5406) -> float:  
     """
