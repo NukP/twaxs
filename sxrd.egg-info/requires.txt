@@ -1,0 +1,9 @@
+h5py
+matplotlib
+ipywidgets
+IPython
+plotly
+numpy
+pandas
+scipy
+python-dateutil

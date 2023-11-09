@@ -1,7 +1,10 @@
 setup.py
 sxrd/__init__.py
-sxrd/sxrd.py
+sxrd/auxiliary.py
+sxrd/dataset.py
+sxrd/plot.py
 sxrd.egg-info/PKG-INFO
 sxrd.egg-info/SOURCES.txt
 sxrd.egg-info/dependency_links.txt
+sxrd.egg-info/requires.txt
 sxrd.egg-info/top_level.txt
