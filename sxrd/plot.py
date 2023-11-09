@@ -243,20 +243,64 @@ def peak_span (dataset:LoadData,
     if export_table is not False:
         df_export.to_excel(export_table, index=False)
 
-def vertical_compare(dataset:LoadData,
+def vertical_compare(dataset: LoadData,
                      x_min: float, 
                      x_max: float,
-                     scan_number_range: Union[int, List[int]],
+                     scan_number: Union[int, List[int]],
                      export_table: Union[bool, str] = False) -> None:
     """
-    Function to plot highest (average) peak intensity in a given window as a function of position.
-    :param datasey: dataset object of the associated experiment.
-    :param x_min: Minimum q-value for the selection window. 
+    Function to plot the highest peak intensity within a given q-range as a function of position for a specified scan number.
+    
+    :param dataset: dataset object of the associated experiment.
+    :param x_min: Minimum q-value for the selection window.
     :param x_max: Maximum q-value for the selection window.
-    :param scan_number_range: Scan number to be included in the function (can be given as one value or in range)
-    :export_table: if given, a path to export an Excel file containing data for making this graph. 
+    :param scan_number: Scan number(s) to be included in the plot (can be a single value or a list).
+    :param export_table: If provided, path to export an Excel file containing the plotted data.
     """
-    pass
+    # Convert single scan number to a list if it's not already a list
+    if isinstance(scan_number, int):
+        scan_number = [scan_number]
+
+    # Initialize a dictionary to store peak heights for each position
+    peak_heights_dict = {}
+
+    # Loop through each scan number
+    for scan in scan_number:
+        # Retrieve the intensity data for the given scan number
+        Y = aux.get_data(fln=dataset.fln_integrated, dataset_path=f'{scan}.1/p3_integrate/integrated/intensity')
+        X = aux.get_data(fln=dataset.fln_integrated, dataset_path=f'{scan}.1/p3_integrate/integrated/q')
+        
+        # Find the peak height for each position within the q-range
+        for pos in range(len(Y)):
+            peak_height = aux.find_peak_height(X=X, Y=Y[pos], x_min=x_min, x_max=x_max)
+            if pos in peak_heights_dict:
+                peak_heights_dict[pos].append(peak_height)
+            else:
+                peak_heights_dict[pos] = [peak_height]
+
+    # Calculate the average peak height for each position
+    positions = list(peak_heights_dict.keys())
+    avg_peak_heights = [np.mean(peak_heights_dict[pos]) for pos in positions]
+
+    # Plot the average peak heights as a function of position
+    fig, ax = plt.subplots()
+    ax.minorticks_on()
+    plt.plot(positions, avg_peak_heights, marker='.', linestyle='-', color='royalblue', alpha=0.9)
+    plt.xlabel('Position')
+    plt.ylabel('Average Maximum Peak Height')
+    plt.title(f'Exp: {dataset.fln_num}, height group: {dataset.height_group},peak range=[{x_min},{x_max}], scan_num = {scan_number}')
+    plt.show()
+
+    # Export the data to an Excel file if requested
+    if export_table:
+        df_export = pd.DataFrame({
+            'Position': positions,
+            'Average Peak Height': avg_peak_heights
+        })
+        df_export.to_excel(export_table, index=False)
+    
+    
+    
 
 
 
