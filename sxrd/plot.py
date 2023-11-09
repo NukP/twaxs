@@ -243,6 +243,22 @@ def peak_span (dataset:LoadData,
     if export_table is not False:
         df_export.to_excel(export_table, index=False)
 
+def vertical_compare(dataset:LoadData,
+                     x_min: float, 
+                     x_max: float,
+                     scan_number_range: Union[int, List[int]],
+                     export_table: Union[bool, str] = False) -> None:
+    """
+    Function to plot highest (average) peak intensity in a given window as a function of position.
+    :param datasey: dataset object of the associated experiment.
+    :param x_min: Minimum q-value for the selection window. 
+    :param x_max: Maximum q-value for the selection window.
+    :param scan_number_range: Scan number to be included in the function (can be given as one value or in range)
+    :export_table: if given, a path to export an Excel file containing data for making this graph. 
+    """
+    pass
+
+
 
 
 
