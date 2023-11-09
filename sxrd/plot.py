@@ -174,6 +174,7 @@ def compare_peak_fe(dataset:LoadData,
 def peak_span (dataset:LoadData,
                x_min: float,
                x_max: float,
+               position: int,
                n_plot: int,
                export_table: Union[bool, str] = False) -> None:
     """
@@ -182,6 +183,7 @@ def peak_span (dataset:LoadData,
     :param datasey: dataset object of the associated experiment.
     :param x_min: minimum q-range of the plotting window.
     :param x_max: maximum q-range of the plotting window.
+    :param position: position of the scan.
     :param n_plot: number of plot to be overlayed.
     :export_table: if given, a path to export an Excel file containing peak information. 
     """
@@ -225,4 +227,22 @@ def peak_span (dataset:LoadData,
         return selected_frames
     
     selected_frames = select_frames(dataset.height_group_frame, n_plot)
-    return selected_frames
+    fig, ax = plt.subplots()
+    ax.minorticks_on()
+    df_export = pd.DataFrame()
+    for frame in selected_frames:
+        df_frame = aux.export_spectrum(data=dataset, scan_num=frame, position=position)
+        idx = [i for i in range(0,len(df_frame)) if df_frame['q'][i] > x_min and df_frame['q'][i] < x_max]
+        plt.plot(df_frame['q'][idx], df_frame['count'][idx], label=f'Scan number: {frame}', marker='.')
+        df_export.insert(len(df_export.columns),f'q - frame:{frame}', df_frame['q'][idx])
+        df_export.insert(len(df_export.columns),f'count - frame:{frame}', df_frame['count'][idx])
+    plt.legend()
+    plt.xlabel('q')
+    plt.ylabel('count')
+
+    if export_table is not False:
+        df_export.to_excel(export_table, index=False)
+
+
+
+
