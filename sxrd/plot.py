@@ -23,16 +23,16 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
     """
     max_positions = 0
     height_group_frame = dataset.height_group_frame
-    fln_num = dataset.fln_num
+    fl_num = dataset.fl_num
     height_group = dataset.height_group
-    integrated_data = dataset.fln_integrated
+    integrated_data = dataset.fl_integrated
     for x_val in height_group_frame:
-        Y = aux.get_data(fln=integrated_data, dataset_path=f'{x_val}.1/p3_integrate/integrated/intensity')
+        Y = aux.get_data(fl=integrated_data, dataset_path=f'{x_val}.1/p3_integrate/integrated/intensity')
         max_positions = max(max_positions, len(Y))
 
     x = np.linspace(0, max_positions-1, max_positions)
     if display_rxn_time:
-        array_timestamp = [aux.get_scan_time(fln=dataset.fln_raw,scan_num=f) for f in height_group_frame]
+        array_timestamp = [aux.get_scan_time(fl=dataset.fl_raw,scan_num=f) for f in height_group_frame]
         array_rxn_time = [(t-array_timestamp[0])/60 for t in array_timestamp]
         y = np.array(array_rxn_time)
     else:
@@ -41,8 +41,8 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
     z = np.empty_like(x)
 
     for i, y_val in enumerate(height_group_frame):
-        X = aux.get_data(fln=integrated_data, dataset_path=f'{y_val}.1/p3_integrate/integrated/q')
-        Y = aux.get_data(fln=integrated_data, dataset_path=f'{y_val}.1/p3_integrate/integrated/intensity')
+        X = aux.get_data(fl=integrated_data, dataset_path=f'{y_val}.1/p3_integrate/integrated/q')
+        Y = aux.get_data(fl=integrated_data, dataset_path=f'{y_val}.1/p3_integrate/integrated/intensity')
         
         for j, x_val in enumerate(x[i]):
             if 0 <= x_val < len(Y):
@@ -58,7 +58,7 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
         x_label = 'Scan number'
     plt.xlabel(x_label)
     plt.ylabel('Position')
-    plt.title(f'Exp: {fln_num}, height group: {height_group}, q range = [{min_range},{max_range}]')
+    plt.title(f'Exp: {fl_num}, height group: {height_group}, q range = [{min_range},{max_range}]')
     ax = plt.gca()
     ax.minorticks_on()
     y_ticks = np.linspace(0, max_positions-1, 11)  
@@ -90,7 +90,7 @@ def compare_peak_fe(dataset:LoadData,
     Function to plot the X-ray intensity and the Faradaic efficiency for H2 and C2H4 (for Cu) or CO (For Ag).
     This function also includes a built-in smoothing function for the X-ray data and the ability to export the X-ray data and the FE into an excel file.
     """
-    fln_num = int(dataset.fln_num)
+    fl_num = int(dataset.fl_num)
     height_group = dataset.height_group
     # Convert single position to a list
     if isinstance(position_range, int):
@@ -107,7 +107,7 @@ def compare_peak_fe(dataset:LoadData,
         avg_df_xray['peak height'] += df['peak height']
     avg_df_xray['peak height'] /= len(dfs_xray)
 
-    df_fe = aux.get_fe(fln_num)
+    df_fe = aux.get_fe(fl_num)
     x_0 = df_fe['time'][0]
     
     fig, ax1 = plt.subplots()
@@ -134,16 +134,16 @@ def compare_peak_fe(dataset:LoadData,
     ax2 = ax1.twinx()
     ax2.minorticks_on()
     ax2.plot(time_adjusted, df_fe['H2']*100, color='orangered', label='H$_2$')
-    if fln_num in [6, 11, 12, 13, 14, 18]:
+    if fl_num in [6, 11, 12, 13, 14, 18]:
         ax2.plot(time_adjusted, df_fe['C2H4']*100, color='forestgreen', label='C$_2$H$_4$')
-    elif fln_num in [15, 16, 17, 19]:
+    elif fl_num in [15, 16, 17, 19]:
         ax2.plot(time_adjusted, df_fe['CO']*100, color='forestgreen', label='CO')
     else:
         print('Invalid file number')
     ax2.set_ylabel('Faradaic efficiency (%)')
     ax2.spines['left'].set_color(y1_axis_color)
     ax2.legend(loc=1)
-    plt.title(f'Exp: {fln_num}, height group: {height_group},peak range=[{x_min},{x_max}], pos. = {position_range}')
+    plt.title(f'Exp: {fl_num}, height group: {height_group},peak range=[{x_min},{x_max}], pos. = {position_range}')
 
     # Export the table for further plotting
     if export_table is not False:
@@ -164,9 +164,9 @@ def compare_peak_fe(dataset:LoadData,
             'FE_H2 / %': df_fe['H2']*100 
         })
 
-        if fln_num in [6, 11, 12, 13, 14, 18]:
+        if fl_num in [6, 11, 12, 13, 14, 18]:
             df_export['FE_C2H4 / %'] = df_fe['C2H4']*100
-        elif fln_num in [15, 16, 17, 19]:
+        elif fl_num in [15, 16, 17, 19]:
             df_export['FE_CO / %'] = df_fe['CO']*100
 
         df_export.to_excel(export_table, index=False)
@@ -267,8 +267,8 @@ def vertical_compare(dataset: LoadData,
     # Loop through each scan number
     for scan in scan_number:
         # Retrieve the intensity data for the given scan number
-        Y = aux.get_data(fln=dataset.fln_integrated, dataset_path=f'{scan}.1/p3_integrate/integrated/intensity')
-        X = aux.get_data(fln=dataset.fln_integrated, dataset_path=f'{scan}.1/p3_integrate/integrated/q')
+        Y = aux.get_data(fl=dataset.fl_integrated, dataset_path=f'{scan}.1/p3_integrate/integrated/intensity')
+        X = aux.get_data(fl=dataset.fl_integrated, dataset_path=f'{scan}.1/p3_integrate/integrated/q')
         
         # Find the peak height for each position within the q-range
         for pos in range(len(Y)):
@@ -288,7 +288,7 @@ def vertical_compare(dataset: LoadData,
     plt.plot(positions, avg_peak_heights, marker='.', linestyle='-', color='royalblue', alpha=0.9)
     plt.xlabel('Position')
     plt.ylabel('Average Maximum Peak Height')
-    plt.title(f'Exp: {dataset.fln_num}, height group: {dataset.height_group},peak range=[{x_min},{x_max}], scan_num = {scan_number}')
+    plt.title(f'Exp: {dataset.fl_num}, height group: {dataset.height_group},peak range=[{x_min},{x_max}], scan_num = {scan_number}')
     plt.show()
 
     # Export the data to an Excel file if requested

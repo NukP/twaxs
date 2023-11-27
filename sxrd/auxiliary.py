@@ -13,18 +13,18 @@ from typing import List, Union, Optional, Any
 
 
 
-def get_data(fln: str, dataset_path: str) -> Any:
+def get_data(fl: str, dataset_path: str) -> Any:
     """
     Extract data from a specified hdf5 file and dataset path.
 
     Parameters:
-    fln (str): The file path for the hdf5 file.
+    fl (str): The file path for the hdf5 file.
     dataset_path (str): The specific dataset path within the hdf5 file.
 
     Returns:
     Any: The data found at the specified dataset path within the file.
     """
-    with h5py.File(fln, 'r') as f:
+    with h5py.File(fl, 'r') as f:
         data = f[dataset_path][()]
     return data
 
@@ -69,12 +69,12 @@ def get_peak_height_time(dataset: 'LoadData',
     This function returns a maximum peak height in the speciifc area at the given position as a function of time stamp. 
     """
     df_hight_time = pd.DataFrame(columns=['time', 'peak height'])
-    raw_data = dataset.fln_raw
+    raw_data = dataset.fl_raw
     frame = dataset.height_group_frame
-    integrated_data = dataset.fln_integrated
+    integrated_data = dataset.fl_integrated
     for n in frame:
         time = get_scan_time(raw_data, scan_num=n)
-        intensity_data = get_data(fln=integrated_data, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
+        intensity_data = get_data(fl=integrated_data, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
         
         # If smoothing is desired, apply the Savitzky-Golay filter
         if smoothing_window:
@@ -83,7 +83,7 @@ def get_peak_height_time(dataset: 'LoadData',
                 smoothing_window += 1
             intensity_data = savgol_filter(intensity_data, smoothing_window, n_pol) 
         
-        peak_height = find_peak_height(X=get_data(fln=integrated_data, dataset_path=f'{n}.1/p3_integrate/integrated/q'),
+        peak_height = find_peak_height(X=get_data(fl=integrated_data, dataset_path=f'{n}.1/p3_integrate/integrated/q'),
                                        Y=intensity_data,
                                        x_min=x_min,
                                        x_max=x_max)
@@ -91,25 +91,25 @@ def get_peak_height_time(dataset: 'LoadData',
         
     return df_hight_time
 
-def get_scan_time(fln: str, scan_num: int) -> float:
+def get_scan_time(fl: str, scan_num: int) -> float:
     """    
     Get the time stamp of the scan in utx.
     """ 
-    exp_timestamp = get_data(fln=fln, dataset_path=f'{scan_num}.1/start_time').decode('utf-8')
+    exp_timestamp = get_data(fl=fl, dataset_path=f'{scan_num}.1/start_time').decode('utf-8')
     exp_timestamp_epoc = float(parse(exp_timestamp).timestamp())
     return (exp_timestamp_epoc)
 
-def get_fe(fln_num: int) -> pd.DataFrame:
+def get_fe(fl_num: int) -> pd.DataFrame:
     """ 
-    This function take the experiment number (fln_num) and return an array of a dataframe containing utx time stamp and the Faradaic efficiency of different gas product. 
+    This function take the experiment number (fl_num) and return an array of a dataframe containing utx time stamp and the Faradaic efficiency of different gas product. 
     """ 
-    # Locate the Excel file based on fln_num
+    # Locate the Excel file based on fl_num
     dir_excel_gc = os.path.join('Analyzed_output', 'GC_Excel')
     for file in os.listdir(dir_excel_gc):
-        if int(file.split('-')[1]) == fln_num:
-            fln_excel = os.path.join(dir_excel_gc, file)
+        if int(file.split('-')[1]) == fl_num:
+            fl_excel = os.path.join(dir_excel_gc, file)
             break
-    input_df = pd.read_excel(fln_excel)
+    input_df = pd.read_excel(fl_excel)
     
     # Helper function get_col
     def get_col(input_df: pd.DataFrame, start_row: int = 2) -> List:
@@ -152,8 +152,8 @@ def export_spectrum(data: 'LoadData',
     This function print the q and count value of the spectrum of a specific scan number and position
     """
     from . import dataset
-    q = get_data(fln=data.fln_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/q')
-    count = get_data(fln=data.fln_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/intensity')[position]
+    q = get_data(fl=data.fl_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/q')
+    count = get_data(fl=data.fl_integrated, dataset_path=f'{scan_num}.1/p3_integrate/integrated/intensity')[position]
     df_export = pd.DataFrame({'q': q, 'count': count})
     if export_dir is not False:
         df_export.to_excel(export_dir, index=False)

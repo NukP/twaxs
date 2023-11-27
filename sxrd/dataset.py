@@ -4,7 +4,7 @@ Cerntain information specific to experimental files obtaining from a beamtime du
 was incoperated here for smooth parsing of the raw data. For other set of experiment, please adjust these 
 conditions acordingly. 
 """  
-import os
+import pandas as pd
 import h5py
 from typing import Dict, Any, List, Tuple, Optional
 import plotly.graph_objects as go
@@ -14,88 +14,76 @@ from . import auxiliary as aux
 
 class LoadData:
     """
-    This class take experiment number and height group to create an object that process properties requires for other functions used for 
-    analysis and visualizing data. This class also include show_spectrum class function, allowing the users to quickly visualize the spectrum. 
+    This class takes an experiment number and height group to create an object that processes properties 
+    required for other functions used for analysis and visualizing data. 
+    This class also includes a show_spectrum class function, allowing users to quickly visualize the spectrum.
     """
    
-    dict_fln: Dict[str, str] = {
-        '6': '06_s01',
-        '11': '11_s01',
-        '12': '12_s06',
-        '13': '13_S11',
-        '14': '14_S03',
-        '15': '15_s05',
-        '16': '16_s07',
-        '17': '17_s13',
-        '18': '18_s11',
-        '19': '19_S14'
-    }
+    def __init__(self, fl_num: int, height_group: int, data_info: Optional[str] = None):
+        self.fl_num = fl_num  
+        self._height_group = height_group
+        self.data_info = data_info
+        self._fl_integrated, self._fl_raw, self._fl_start_macro, self._fl_end_macro, self._condition = self.get_fl_detail()
 
-    dict_condition: Dict[str, str] = {
-        '6': 'PVDF-HFP Cu 0.2 μm 2 M KCl (trial 1)',
-        '11': 'PVDF-HFP Cu 0.2 μm 2 M KCl (trial 2)',
-        '12': 'PVDF-HFP Cu 0.2 μm 2 M KCl + 0.1 M H\u2082SO\u2084',
-        '13': 'PVDF-HFP Cu 0.2 μm 2 M CsCl',
-        '14': 'PVDF-HFP Cu 0.2 μm 2 M KCl, interupted / protective /oxidation',
-        '15': 'PVDF-HFP Ag 0.2 μm 2 M KCl',
-        '16': 'PVDF-HFP Ag 0.2 μm 2 M KCl + 0.1 M H\u2082SO\u2084',
-        '17': 'PVDF-HFP Ag 0.2 μm 2 M KCl, interupted / protective',
-        '18': 'PVDF-HFP Ag 0.2 μm 2 M CsCl',
-        '19': 'PVDF-HFP Ag 0.2 μm 2 M KCl, interupted / oxidative'
-    }
+    def get_fl_detail(self,
+                      input_fl_integrated: Optional[str] = None,
+                      input_fl_raw: Optional[str] = None, 
+                      input_fl_start_macro: Optional[int] = None, 
+                      input_fl_end_macro: Optional[int] = None,
+                      input_condition: Optional[str] = None
+                      ) -> Tuple[str, str, int, Optional[int], str]:
+        """
+        Retrieves file details based on the experimental number. If data_info is provided, it fetches details from the Excel file,
+        otherwise, it uses the provided input values.
+        """
+        if self.data_info:
+            try:
+                df_exp_info = pd.read_excel(self.data_info)
+            except FileNotFoundError:
+                raise Exception(f"Excel file not found: {self.data_info}")
 
-    dict_macro_start: Dict[str, int] = {
-        '6': 14,
-        '11': 9,
-        '12': 27,
-        '13': 13,
-        '14': 15,
-        '15': 19,
-        '16': 16,
-        '17': 17,
-        '18': 10,
-        '19': 6
-    }
+            data_row = df_exp_info[df_exp_info['Experimental number'] == self.fl_num]
 
-    def __init__(self, fln: int, height_group: int):
-        self.fln: str = str(fln)
-        self._height_group: int = height_group
-        self._fln_raw: str = None
-        self._fln_integrated: str = None
-        self._fln_start_macro: int = None
-        self._height_group_frame: Dict[int, Any] = {}
-        self._fln_raw, self._fln_integrated, self._fln_start_macro = self.get_fln_detail()
+            if data_row.empty:
+                raise ValueError(f"Experimental number {self.fl_num} not found in the data.")
 
-    def get_fln_detail(self) -> Tuple[str, str, int]:
-        fln_base = self.dict_fln.get(self.fln)
-        if fln_base is None:
-            return None, None, None
+            fl_integrated = data_row['Integrated file directory'].values[0]
+            fl_raw = data_row['Raw file directory'].values[0]
+            fl_start_macro = data_row['Macro start number'].values[0]
+            fl_end_macro = data_row['Macro end number (optional)'].values[0] if not pd.isna(data_row['Macro end number (optional)'].values[0]) else None
+            condition = data_row['Condition name'].values[0]
+        else:
+            fl_integrated = input_fl_integrated
+            fl_raw = input_fl_raw
+            fl_start_macro = input_fl_start_macro
+            fl_end_macro = input_fl_end_macro
+            condition = input_condition
 
-        fln_base += '_0001'
-        fln_raw = os.path.join('Data', fln_base + '_raw.h5')
-        fln_integrated = os.path.join('Data', fln_base + '_integrated.h5')
-        fln_start_macro = self.dict_macro_start.get(self.fln, None)
-        return fln_raw, fln_integrated, fln_start_macro
+            # Check if all necessary data is provided
+            if not all([fl_integrated, fl_raw, fl_start_macro, condition]):
+                raise ValueError("All file details must be provided if not using an Excel file.")
+
+        return fl_integrated, fl_raw, fl_start_macro, fl_end_macro, condition 
 
     @property
-    def fln_raw(self) -> str:
-        return self._fln_raw
+    def fl_raw(self) -> str:
+        return self._fl_raw
 
     @property
     def height_group(self) -> int:
         return self._height_group
 
     @property
-    def fln_num(self) -> str:
-        return self.fln
+    def fl_num(self) -> str:
+        return self.fl
 
     @property
-    def fln_integrated(self) -> str:
-        return self._fln_integrated
+    def fl_integrated(self) -> str:
+        return self._fl_integrated
 
     @property
-    def fln_start_macro(self) -> int:
-        return self._fln_start_macro
+    def fl_start_macro(self) -> int:
+        return self._fl_start_macro
 
     def get_max_frame_index(self, filename: str) -> int:
         with h5py.File(filename, 'r') as f:
@@ -104,18 +92,18 @@ class LoadData:
             return max(frame_indices)
 
     def get_height_array(self, start: int, num_end: int) -> Dict[int, Any]:
-        end = self.get_max_frame_index(self._fln_raw) if num_end == 0 else num_end
+        end = self.get_max_frame_index(self._fl_raw) if num_end == 0 else num_end
         dict_height = {}
         for scan_num in range(start, end+1):
-            height = aux.get_data(fln=self._fln_raw, dataset_path=f'{scan_num}.1/instrument/positioners/h1tz')
+            height = aux.get_data(fl=self._fl_raw, dataset_path=f'{scan_num}.1/instrument/positioners/h1tz')
             dict_height[scan_num] = height
         return dict_height
 
     @property
     def height_group_frame(self) -> Dict[int, Any]:
         if not self._height_group_frame:
-            end_num = 148 if self.fln == '12' else 0
-            height_array = self.get_height_array(self._fln_start_macro, end_num)
+            end_num = 148 if self.fl == '12' else 0
+            height_array = self.get_height_array(self._fl_start_macro, end_num)
             grouped_height_array = group_heights(height_array)
             self._height_group_frame = grouped_height_array[self.height_group]
         return self._height_group_frame
@@ -152,7 +140,7 @@ class LoadData:
         fig = go.FigureWidget()
         fig.update_layout(
             title={
-                'text': f'Exp: {self.fln_num}, Height group: {self.height_group} <br> Condition: {self.dict_condition.get(self.fln)}',
+                'text': f'Exp: {self.fl_num}, Height group: {self.height_group} <br> Condition: {self.dict_condition.get(self.fl)}',
                 'y':0.9,  
                 'x':0.5, 
                 'xanchor': 'center',  
@@ -194,9 +182,9 @@ class LoadData:
 
         # Function to update the plot with new data
         def plot_data(n: int, position: int, bg_substract: bool, log_scale: bool) -> None:
-            x = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/q')
-            y_0 = aux.get_data(fln=self._fln_integrated, dataset_path=f'{self.height_group_frame[0]}.1/p3_integrate/integrated/intensity')[position]
-            y_n = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
+            x = aux.get_data(fl=self._fl_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/q')
+            y_0 = aux.get_data(fl=self._fl_integrated, dataset_path=f'{self.height_group_frame[0]}.1/p3_integrate/integrated/intensity')[position]
+            y_n = aux.get_data(fl=self._fl_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')[position]
 
             y = y_n - y_0 if bg_substract else y_n
 
@@ -208,7 +196,7 @@ class LoadData:
 
         max_positions = 0
         for n in self.height_group_frame:
-            Y = aux.get_data(fln=self._fln_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')
+            Y = aux.get_data(fl=self._fl_integrated, dataset_path=f'{n}.1/p3_integrate/integrated/intensity')
             max_positions = max(max_positions, len(Y))
 
         # Create interactive sliders and checkbox
