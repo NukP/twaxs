@@ -99,17 +99,11 @@ def get_scan_time(fl: str, scan_num: int) -> float:
     exp_timestamp_epoc = float(parse(exp_timestamp).timestamp())
     return (exp_timestamp_epoc)
 
-def get_fe(fl_num: int) -> pd.DataFrame:
+def get_fe(path_gc_excel: str) -> pd.DataFrame:
     """ 
-    This function take the experiment number (fl_num) and return an array of a dataframe containing utx time stamp and the Faradaic efficiency of different gas product. 
+    This function take the excel fe path (path)gc_excel) and return an array of a dataframe containing utx time stamp and the Faradaic efficiency of different gas product. 
     """ 
-    # Locate the Excel file based on fl_num
-    dir_excel_gc = os.path.join('Analyzed_output', 'GC_Excel')
-    for file in os.listdir(dir_excel_gc):
-        if int(file.split('-')[1]) == fl_num:
-            fl_excel = os.path.join(dir_excel_gc, file)
-            break
-    input_df = pd.read_excel(fl_excel)
+    input_df = pd.read_excel(path_gc_excel)
     
     # Helper function get_col
     def get_col(input_df: pd.DataFrame, start_row: int = 2) -> List:
