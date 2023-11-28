@@ -6,6 +6,8 @@ conditions acordingly.
 """  
 import pandas as pd
 import h5py
+import numpy as np
+from pathlib import Path
 from typing import Dict, Any, List, Tuple, Optional
 import plotly.graph_objects as go
 from IPython.display import display, clear_output
@@ -29,7 +31,7 @@ class LoadData:
                       input_fl_integrated: Optional[str] = None,
                       input_fl_raw: Optional[str] = None, 
                       input_fl_start_macro: Optional[int] = None, 
-                      input_fl_end_macro: Optional[int] = None,
+                      input_fl_end_macro: Optional[int] = np.nan,
                       input_condition: Optional[str] = None
                       ) -> Tuple[str, str, int, Optional[int], str]:
         """
@@ -47,23 +49,24 @@ class LoadData:
             if data_row.empty:
                 raise ValueError(f"Experimental number {self.fl_num} not found in the data.")
 
-            fl_integrated = data_row['Integrated file directory'].values[0]
-            fl_raw = data_row['Raw file directory'].values[0]
+
+            fl_integrated_path = Path(data_row['Integrated file directory'].values[0]).resolve()
+            fl_raw_path = Path(data_row['Raw file directory'].values[0]).resolve()
+
             fl_start_macro = data_row['Macro start number'].values[0]
             fl_end_macro = data_row['Macro end number (optional)'].values[0] if not pd.isna(data_row['Macro end number (optional)'].values[0]) else None
             condition = data_row['Condition name'].values[0]
         else:
-            fl_integrated = input_fl_integrated
-            fl_raw = input_fl_raw
+            fl_integrated_path = Path(input_fl_integrated).resolve() if input_fl_integrated else None
+            fl_raw_path = Path(input_fl_raw).resolve() if input_fl_raw else None
             fl_start_macro = input_fl_start_macro
             fl_end_macro = input_fl_end_macro
             condition = input_condition
 
-            # Check if all necessary data is provided
-            if not all([fl_integrated, fl_raw, fl_start_macro, condition]):
+            if not all([fl_integrated_path, fl_raw_path, fl_start_macro, condition]):
                 raise ValueError("All file details must be provided if not using an Excel file.")
 
-        return fl_integrated, fl_raw, fl_start_macro, fl_end_macro, condition 
+        return str(fl_integrated_path), str(fl_raw_path), fl_start_macro, fl_end_macro, condition
 
     @property
     def fl_raw(self) -> str:
@@ -74,25 +77,28 @@ class LoadData:
         return self._height_group
 
     @property
-    def fl_num(self) -> str:
-        return self.fl
-
-    @property
     def fl_integrated(self) -> str:
         return self._fl_integrated
 
     @property
     def fl_start_macro(self) -> int:
         return self._fl_start_macro
+    
+    @property
+    def fl_end_macro(self) -> Optional[int]:
+        return self._fl_end_macro
 
-    def get_max_frame_index(self, filename: str) -> int:
-        with h5py.File(filename, 'r') as f:
+    def get_max_frame_index(self) -> int:
+        with h5py.File(self.fl_raw, 'r') as f:
             keys = list(f.keys())
             frame_indices = [int(key.split('.')[0]) for key in keys if '.' in key]
             return max(frame_indices)
 
     def get_height_array(self, start: int, num_end: int) -> Dict[int, Any]:
-        end = self.get_max_frame_index(self._fl_raw) if num_end == 0 else num_end
+        if pd.isna(num_end):
+            end = self.get_max_frame_index()
+        else:
+            end = int(num_end)
         dict_height = {}
         for scan_num in range(start, end+1):
             height = aux.get_data(fl=self._fl_raw, dataset_path=f'{scan_num}.1/instrument/positioners/h1tz')
@@ -101,11 +107,9 @@ class LoadData:
 
     @property
     def height_group_frame(self) -> Dict[int, Any]:
-        if not self._height_group_frame:
-            end_num = 148 if self.fl == '12' else 0
-            height_array = self.get_height_array(self._fl_start_macro, end_num)
-            grouped_height_array = group_heights(height_array)
-            self._height_group_frame = grouped_height_array[self.height_group]
+        height_array = self.get_height_array(self._fl_start_macro, self._fl_end_macro)
+        grouped_height_array = group_heights(height_array)
+        self._height_group_frame = grouped_height_array[self.height_group]
         return self._height_group_frame
     
     def show_spectrum(self, xref_list: Optional[List] = None):
@@ -140,7 +144,7 @@ class LoadData:
         fig = go.FigureWidget()
         fig.update_layout(
             title={
-                'text': f'Exp: {self.fl_num}, Height group: {self.height_group} <br> Condition: {self.dict_condition.get(self.fl)}',
+                'text': f'Exp: {self.fl_num}, Height group: {self.height_group} <br> Condition: {self._condition}',
                 'y':0.9,  
                 'x':0.5, 
                 'xanchor': 'center',  
