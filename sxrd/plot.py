@@ -78,8 +78,11 @@ def compare_peak_fe(dataset:LoadData,
                     x_min: float, 
                     x_max: float,
                     position_range: Union[int, List[int]],
+                    path_gc_excel: str,
                     smoothing_window: Union [None, int] = None,
                     n_pol: int =3,
+                    compare_product: str ='C2H4',
+                    compare_product_label:str ='C$_2$H$_4$',
                     axis_y_log: bool = False,
                     axis_y_min: Union[bool, int] = False,
                     axis_y_max: Union[bool, int] = False,
@@ -107,7 +110,7 @@ def compare_peak_fe(dataset:LoadData,
         avg_df_xray['peak height'] += df['peak height']
     avg_df_xray['peak height'] /= len(dfs_xray)
 
-    df_fe = aux.get_fe(fl_num)
+    df_fe = aux.get_fe(path_gc_excel)
     x_0 = df_fe['time'][0]
     
     fig, ax1 = plt.subplots()
@@ -134,12 +137,7 @@ def compare_peak_fe(dataset:LoadData,
     ax2 = ax1.twinx()
     ax2.minorticks_on()
     ax2.plot(time_adjusted, df_fe['H2']*100, color='orangered', label='H$_2$')
-    if fl_num in [6, 11, 12, 13, 14, 18]:
-        ax2.plot(time_adjusted, df_fe['C2H4']*100, color='forestgreen', label='C$_2$H$_4$')
-    elif fl_num in [15, 16, 17, 19]:
-        ax2.plot(time_adjusted, df_fe['CO']*100, color='forestgreen', label='CO')
-    else:
-        print('Invalid file number')
+    ax2.plot(time_adjusted, df_fe[compare_product]*100, color='forestgreen', label=compare_product_label)
     ax2.set_ylabel('Faradaic efficiency (%)')
     ax2.spines['left'].set_color(y1_axis_color)
     ax2.legend(loc=1)
@@ -163,12 +161,7 @@ def compare_peak_fe(dataset:LoadData,
             'FE_time/min': time_adjusted,
             'FE_H2 / %': df_fe['H2']*100 
         })
-
-        if fl_num in [6, 11, 12, 13, 14, 18]:
-            df_export['FE_C2H4 / %'] = df_fe['C2H4']*100
-        elif fl_num in [15, 16, 17, 19]:
-            df_export['FE_CO / %'] = df_fe['CO']*100
-
+        df_export[f'FE_{compare_product} / %'] = df_fe[compare_product]*100
         df_export.to_excel(export_table, index=False)
 
 def peak_span (dataset:LoadData,
