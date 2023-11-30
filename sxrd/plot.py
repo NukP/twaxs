@@ -59,7 +59,7 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
         x_label = 'Scan number'
     plt.xlabel(x_label)
     plt.ylabel('Position')
-    plt.title(f'Exp: {fl_num}, height group: {height_group}, q range = [{min_range},{max_range}]')
+    plt.title(f'Exp: {fl_num}, height group: {height_group}, q range = [{min_range:.4f},{max_range:.4f}]')
     ax = plt.gca()
     ax.minorticks_on()
     y_ticks = np.linspace(0, max_positions-1, 11)  
