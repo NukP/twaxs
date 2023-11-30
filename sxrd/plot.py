@@ -10,7 +10,7 @@ from typing import List, Dict, Any, Union
 from . import auxiliary as aux
 from .dataset import LoadData
 
-def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: str = None, display_rxn_time: bool = False) -> None:
+def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: str = None, display_rxn_time: bool = False, export_fig: str = None) -> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
     extract the entire intensity in all of the space of q and scan number in the particular experiment.
@@ -20,6 +20,7 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
     :param max_range: Maximum range of q values.
     :param export_data: Whether or not to export data in excel format.
     :param display_rxn_time: If True, display reaction time. If False, display scan number.
+    :param export_fig: If the path is given, export graph to the specified path.
     """
     max_positions = 0
     height_group_frame = dataset.height_group_frame
@@ -64,6 +65,8 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
     y_ticks = np.linspace(0, max_positions-1, 11)  
     ax.set_yticks(y_ticks)
     ax.yaxis.set_major_locator(ticker.FixedLocator(y_ticks))
+    if export_fig:
+        plt.savefig(export_fig)
     plt.show()
     if export_data:
         data = {
