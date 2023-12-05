@@ -202,3 +202,15 @@ def load_xray_ref_folder(xray_ref_folder: str, threshold: int = 10) -> List[List
             xray_ref_list.append(get_ref_xray(full_file_path, threshold=threshold))
     return xray_ref_list
 
+def get_height_diff(dataset: 'LoadData') -> float:
+    """
+    Get the average step different in position (in micrometer).
+
+    Parameters:
+    dataset: dataset object of the associated experiment.
+
+    Returns:
+    float: Average height difference. 
+    """
+    fl_raw = dataset.fl_raw
+
