@@ -12,11 +12,11 @@ from .dataset import LoadData
 
 def heatmap(dataset:LoadData,
             min_range: float,
-             max_range: float,
-             export_data: str = None,
-             display_rxn_time: bool = False,
-             export_fig: str = None,
-             )-> None:
+            max_range: float,
+            export_data: str = None,
+            display_rxn_time: bool = False,
+            export_fig: str = None,
+            )-> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
     extract the entire intensity in all of the space of q and scan number in the particular experiment.
