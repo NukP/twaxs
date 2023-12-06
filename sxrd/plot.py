@@ -16,6 +16,7 @@ def heatmap(dataset:LoadData,
             export_data: str = None,
             display_rxn_time: bool = False,
             export_fig: str = None,
+            plot_distance: bool = False
             )-> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
@@ -27,6 +28,7 @@ def heatmap(dataset:LoadData,
     :param export_data: Whether or not to export data in excel format.
     :param display_rxn_time: If True, display reaction time. If False, display scan number.
     :param export_fig: If the path is given, export graph to the specified path.
+    :param plot_distance: If True, plot the heatmap in real distance rather than in arbitary position.
     """
     max_positions = 0
     height_group_frame = dataset.height_group_frame
@@ -56,19 +58,26 @@ def heatmap(dataset:LoadData,
                 z[i, j] = aux.find_peak_height(X=X, Y=Y[int(x_val)], x_min=min_range, x_max=max_range)
             else:
                 z[i, j] = np.nan  
-
-    plt.imshow(z.T, extent=[y.min(), y.max(), 0, max_positions], origin='lower', aspect='auto', cmap='RdYlBu', interpolation='nearest')
+    if plot_distance:
+        distance_multiplier = aux.get_height_diff(dataset)
+    else:
+        distance_multiplier = 1
+    plt.imshow(z.T, extent=[y.min(), y.max(), 0, max_positions*distance_multiplier], origin='lower', aspect='auto', cmap='RdYlBu', interpolation='nearest')
     plt.colorbar(label='Maximum peak height')
     if display_rxn_time:
         x_label = 'Time (min)'
     else:
         x_label = 'Scan number'
     plt.xlabel(x_label)
-    plt.ylabel('Position')
-    plt.title(f'Exp: {fl_num}, height group: {height_group}, q range = [{min_range:.4f},{max_range:.4f}]')
+    if plot_distance:
+        y_label = 'Distance (μm)'
+    else:
+        y_label = 'Position'
+    plt.ylabel(y_label)
+    plt.title(f'Exp: {fl_num}, height group: {height_group}, q range = [{min_range:.4f},{max_range:.4f}]', size=11)
     ax = plt.gca()
     ax.minorticks_on()
-    y_ticks = np.linspace(0, max_positions-1, 11)  
+    y_ticks = np.linspace(0, max_positions*distance_multiplier, 11)  
     ax.set_yticks(y_ticks)
     ax.yaxis.set_major_locator(ticker.FixedLocator(y_ticks))
     if export_fig:
@@ -77,7 +86,7 @@ def heatmap(dataset:LoadData,
     if export_data:
         data = {
             x_label: y.flatten(),
-            'Position': x.flatten(),
+            y_label: x.flatten()*distance_multiplier,
             'Maximum peak height': z.flatten()
         }
         df = pd.DataFrame(data)
