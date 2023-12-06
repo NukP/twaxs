@@ -10,7 +10,13 @@ from typing import List, Dict, Any, Union
 from . import auxiliary as aux
 from .dataset import LoadData
 
-def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: str = None, display_rxn_time: bool = False, export_fig: str = None) -> None:
+def heatmap(dataset:LoadData,
+            min_range: float,
+             max_range: float,
+             export_data: str = None,
+             display_rxn_time: bool = False,
+             export_fig: str = None,
+             )-> None:
     """
     Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will 
     extract the entire intensity in all of the space of q and scan number in the particular experiment.
@@ -37,7 +43,7 @@ def heatmap(dataset:LoadData, min_range: float, max_range: float, export_data: s
         array_rxn_time = [(t-array_timestamp[0])/60 for t in array_timestamp]
         y = np.array(array_rxn_time)
     else:
-        y = np.array(height_group_frame)  # ensure this is numpy array for operations later on
+        y = np.array(height_group_frame)  
     x, y = np.meshgrid(x, y)
     z = np.empty_like(x)
 
