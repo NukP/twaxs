@@ -212,7 +212,7 @@ def get_height_diff(dataset: 'LoadData') -> float:
     Returns:
     float: Average height difference. 
     """
-    arr_position = get_data(fl=dataset.fl_raw, dataset_path=f'{dataset.fl_start_macro}.1/instrument/positioners/pp01')
+    arr_position = get_data(fl=dataset.fl_raw, dataset_path=f'{dataset.fl_start_macro}.1/instrument/positioners/{dataset.pos_scan_motor}')
     pos_last = arr_position[-1]
     post_first = arr_position[0]
     diff = abs(pos_last-post_first)*1000/len(arr_position)
