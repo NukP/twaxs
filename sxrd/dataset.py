@@ -32,8 +32,10 @@ class LoadData:
                       input_fl_raw: Optional[str] = None, 
                       input_fl_start_macro: Optional[int] = None, 
                       input_fl_end_macro: Optional[int] = np.nan,
-                      input_condition: Optional[str] = None
-                      ) -> Tuple[str, str, int, Optional[int], str]:
+                      input_condition: Optional[str] = None,
+                      input_pos_scan_motor: Optional[str] = 'pp01',
+                      input_h_group_motor: Optional[str] = 'h1tz'
+                      ) -> Tuple[str, str, int, Optional[int], str, str, str]:
         """
         Retrieves file details based on the experimental number. If data_info is provided, it fetches details from the Excel file,
         otherwise, it uses the provided input values.
@@ -56,17 +58,21 @@ class LoadData:
             fl_start_macro = data_row['Macro start number'].values[0]
             fl_end_macro = data_row['Macro end number (optional)'].values[0] if not pd.isna(data_row['Macro end number (optional)'].values[0]) else None
             condition = data_row['Condition name'].values[0]
+            pos_scan_motor = data_row['Position scanning motor'].values[0]
+            h_group_motor = data_row['Height group motor'].values[0]
         else:
             fl_integrated_path = Path(input_fl_integrated).resolve() if input_fl_integrated else None
             fl_raw_path = Path(input_fl_raw).resolve() if input_fl_raw else None
             fl_start_macro = input_fl_start_macro
             fl_end_macro = input_fl_end_macro
             condition = input_condition
+            pos_scan_motor = input_pos_scan_motor
+            h_group_motor = input_h_group_motor
 
-            if not all([fl_integrated_path, fl_raw_path, fl_start_macro, condition]):
+            if not all([fl_integrated_path, fl_raw_path, fl_start_macro, condition, pos_scan_motor, h_group_motor]):
                 raise ValueError("All file details must be provided if not using an Excel file.")
 
-        return str(fl_integrated_path), str(fl_raw_path), fl_start_macro, fl_end_macro, condition
+        return str(fl_integrated_path), str(fl_raw_path), fl_start_macro, fl_end_macro, condition, pos_scan_motor, h_group_motor
 
     @property
     def fl_raw(self) -> str:
