@@ -14,6 +14,8 @@ setup(
     'pandas',
     'scipy',
     'python-dateutil',
+    'openpyxl',
+    'ipykernel',
     'pathlib'
     ],
 )
