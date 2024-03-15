@@ -13,7 +13,7 @@ setup(
     'numpy',
     'pandas',
     'scipy',
-    'python-dateutil'
+    'python-dateutil',
     'pathlib'
     ],
 )
