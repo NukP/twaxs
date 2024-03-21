@@ -1,7 +1,7 @@
-# SXRD
-A Python package for visualizing and analyzing operando XRD data.
+# T-Waxs
+A Python package for visualizing and analyzing time-resolved wide-angle X-ray scattering.
 
-### Capability
+### Capabilities
 - Reads the diffraction pattern data directly from HDF5 files. The package was initially developed to visualize the operando synchrotron data from Beamline ID31 at the European Synchrotron Radiation Facility (ESRF).
 - The script can slice the data based on different motor heights and visualize the XRD pattern from the same motor height (the same position on the sample).
 
@@ -10,6 +10,7 @@ A Python package for visualizing and analyzing operando XRD data.
 - Plots a heatmap of peak height (at a specific q-range) as a function of scan number (or time) and position (or actual position), with the ability to export the plotted heatmap or the raw data.
 - Plots the peak height (from the specified q-range and specific position) and the Faradaic efficiency of hydrogen or ethylene as a function of time (double-axis graph).
 - Plots the average peak height as a function of position.
+- The motor used for scanning and high chnaging can be specified.
 
 ### Contributors
 - [Nukorn Plainpan](https://github.com/NukP)
