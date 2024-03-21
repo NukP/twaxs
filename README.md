@@ -1,4 +1,4 @@
-# T-Waxs
+# T-WAXS
 
 ![twaxs_logo-01](https://github.com/NukP/twaxs/assets/127328032/8ceb32ef-0524-4802-86a8-f8f378012ecb)
 
