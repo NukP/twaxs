@@ -2,7 +2,7 @@
 
 ![twaxs_logo-02](https://github.com/NukP/twaxs/assets/127328032/4d70df27-e927-4628-975d-9175a0151571)
 
-A Python package for visualizing and analyzing time-resolved wide-angle X-ray scattering.
+A Python package for visualizing and analyzing temporal wide-angle X-ray scattering.
 
 ### Capabilities
 - Reads the diffraction pattern data directly from HDF5 files. The package was initially developed to visualize the operando synchrotron data from Beamline ID31 at the European Synchrotron Radiation Facility (ESRF).
