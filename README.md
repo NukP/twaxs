@@ -1,6 +1,6 @@
 # T-WAXS
 
-![twaxs_logo-01](https://github.com/NukP/twaxs/assets/127328032/8ceb32ef-0524-4802-86a8-f8f378012ecb)
+![twaxs_logo-02](https://github.com/NukP/twaxs/assets/127328032/4d70df27-e927-4628-975d-9175a0151571)
 
 A Python package for visualizing and analyzing time-resolved wide-angle X-ray scattering.
 
