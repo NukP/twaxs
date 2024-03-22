@@ -15,6 +15,12 @@ A Python package for visualizing and analyzing temporal wide-angle X-ray scatter
 - Plots the average peak height as a function of position.
 - Allows specifying the motor used for scanning and height changes.
 
+### Installation
+To install the latest version of the package, execute the following command within the terminal of the intended environment:
+```
+pip install https://github.com/EmpaEconversion/twaxs/archive/refs/heads/main.zip
+```
+
 ### Contributors
 - [Nukorn Plainpan](https://github.com/NukP)
 
