@@ -18,7 +18,7 @@ A Python package for visualizing and analyzing temporal wide-angle X-ray scatter
 ### Installation
 To install the latest version of the package, execute the following command within the terminal of the intended environment:
 ```
-pip install https://github.com/EmpaEconversion/twaxs/archive/refs/heads/main.zip
+pip install twaxs
 ```
 
 ### Contributors
