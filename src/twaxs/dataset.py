@@ -155,7 +155,7 @@ class LoadData:
         else:
             end = int(num_end)
         dict_height = {}
-        for scan_num in [num for num in range(start, end + 1) if num not in [14, 21, 46, 87]]:
+        for scan_num in [num for num in range(start, end + 1) if num not in [14, 21, 46, 87]]:     #Put the list of frame to skip here
             height = aux.get_data(
                 fl=self._fl_raw,
                 dataset_path=f"{scan_num}.1/instrument/positioners/{self.h_group_motor}",
