@@ -17,18 +17,21 @@ def heatmap(
     display_rxn_time: bool = False,
     export_fig: str = None,
     plot_distance: bool = False,
+    lower_limit: float = None,  
+    upper_limit: float = None,  
 ) -> None:
     """
-    Plots a heatmap based on the intensity of peaks as a function of the q range and scan number. The script will
-    extract the entire intensity in all of the space of q and scan number in the particular experiment.
+    Plots a heatmap based on the intensity of peaks as a function of the q range and scan number.
 
-    :param datasey: dataset object of the associated experiment.
+    :param dataset: Dataset object of the associated experiment.
     :param min_range: Minimum range of q values.
     :param max_range: Maximum range of q values.
-    :param export_data: Whether or not to export data in excel format.
+    :param export_data: Whether or not to export data in Excel format.
     :param display_rxn_time: If True, display reaction time. If False, display scan number.
     :param export_fig: If the path is given, export graph to the specified path.
-    :param plot_distance: If True, plot the heatmap in real distance rather than in arbitary position.
+    :param plot_distance: If True, plot the heatmap in real distance rather than in arbitrary position.
+    :param lower_limit: Minimum intensity value to display in the heatmap.
+    :param upper_limit: Maximum intensity value to display in the heatmap.
     """
     max_positions = 0
     height_group_frame = dataset.height_group_frame
@@ -70,6 +73,10 @@ def heatmap(
                 )
             else:
                 z[i, j] = np.nan
+
+    if lower_limit is not None or upper_limit is not None:
+        z = np.clip(z, a_min=lower_limit, a_max=upper_limit)
+
     if plot_distance:
         distance_multiplier = aux.get_height_diff(dataset)
     else:
@@ -113,6 +120,7 @@ def heatmap(
         }
         df = pd.DataFrame(data)
         df.to_excel(export_data, index=False)
+
 
 
 def compare_peak_fe(
