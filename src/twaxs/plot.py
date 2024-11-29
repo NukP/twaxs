@@ -73,10 +73,6 @@ def heatmap(
                 )
             else:
                 z[i, j] = np.nan
-
-    if lower_limit is not None or upper_limit is not None:
-        z = np.clip(z, a_min=lower_limit, a_max=upper_limit)
-
     if plot_distance:
         distance_multiplier = aux.get_height_diff(dataset)
     else:
@@ -88,7 +84,10 @@ def heatmap(
         aspect="auto",
         cmap="RdYlBu",
         interpolation="nearest",
+        vmin=lower_limit, 
+        vmax=upper_limit,  
     )
+
     plt.colorbar(label="Maximum peak height")
     if display_rxn_time:
         x_label = "Time (min)"
